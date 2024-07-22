@@ -5,6 +5,8 @@
 Inspired by [Sam Witteveen](https://github.com/samwit) during his demonstration in Machine Learning Singapore group meetup.
 This is a more "software engineering" take on the idea (if you'll allow me) and also to improve my skills relating to application development and GenAI related matters
 
+### Note: This project is developed on a Apple Silicon chip!
+
 ## Description
 
 IUYS is a tool that understands your images or screenshots for you to be able perform query and find the relevant results ala "Google Search" style
