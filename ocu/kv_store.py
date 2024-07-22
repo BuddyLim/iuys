@@ -4,10 +4,10 @@ import dbm
 from ocu.utils import SingletonMeta
 
 
-class DBConnection(metaclass=SingletonMeta):
+class KVConnection(metaclass=SingletonMeta):
     """Main class for local key-value store institation"""
 
-    store_path = "./iuys_store"
+    store_path = "../store/iuys_kv_store"
     db = None
 
     def __init__(self, path: str = ""):

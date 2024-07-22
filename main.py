@@ -1,40 +1,51 @@
+"""Main file for iuys"""
+
 import threading
 from pyee import EventEmitter
-from ocu import QueueWorker
-from ocu import VLMEngine
-from ocu import FileWatcher
+from ocu import QueueWorker, VLMEngine, FileWatcher
+from ocu.utils import logger, SingletonMeta
+
 
 emitter = EventEmitter()
 
 
 def run_watcher():
+    """Main function to start file observer"""
     base_path = "/Users/limkuangtar/Desktop"
     watcher = FileWatcher(ee=emitter, input_path=base_path)
     watcher.observe()
 
 
-if __name__ == "__main__":
-    try:
-        background_thread = threading.Thread(target=run_watcher, args=())
-        background_thread.daemon = True
-        background_thread.start()
-        worker = QueueWorker(ee=emitter)
-        vlm_engine = VLMEngine()
+class MainProgram(metaclass=SingletonMeta):
+    """Main entrypoint for running the program"""
 
-        IN_PROGRESS = False
+    in_progress = False
 
+    def __init__(self) -> None:
+        self.background_thread = threading.Thread(target=run_watcher, args=())
+        self.background_thread.daemon = True
+        self.background_thread.start()
+        self.worker = QueueWorker(ee=emitter)
+        self.vlm_engine = VLMEngine()
+
+    def run(self):
+        """Running loop for the program"""
         while True:
-            if len(worker.task) == 0 or IN_PROGRESS:
+            if len(self.worker.task_list) == 0 or self.in_progress:
                 continue
-            print(worker.task)
-            print("Main thread received new task")
-            IN_PROGRESS = True
-            path = worker.task.pop()
-            response = vlm_engine.query_on_image(
+
+            logger.info(f"Received a new task: {self.worker.task_list[0]}")
+            self.in_progress = True
+            path = self.worker.task_list.pop()
+            response = self.vlm_engine.query_on_image(
                 prompt="Describe the image to me", image_path=path
             )
-            print(response)
-            IN_PROGRESS = False
+            logger.info(f"{self.vlm_engine.model_path} generated:\n{response}")
+            self.in_progress = False
 
+
+if __name__ == "__main__":
+    try:
+        MainProgram().run()
     except KeyboardInterrupt:
-        print("Stopped")
+        logger.info("Keyboard interruption; Stopped")

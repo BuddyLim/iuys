@@ -11,14 +11,15 @@ This is a more "software engineering" take on the idea (if you'll allow me) and 
 
 IUYS is a tool that understands your images or screenshots for you to be able perform query and find the relevant results ala "Google Search" style
 
-## Toolings Used
+## Tools Used
 
-Note: lancedb and dbm in this tool are ephemeral, once we shut the tooling down it loses all context. We retain context by creating a dump file and loading it back when the tool initializes again
+Note: lancedb and dbm in this usage is ephemeral, once we shut the tooling down it loses all context. We retain context by creating a dump file and loading it back when the tool initializes again
 
-- kombu (Event broker)
+- pyee (Event broker)
 - Watchdog (File watcher)
 - lancedb (Vector store)
 - dbm (Key-value store)
+- mlx-vlm (Visual language model framework)
 
 ## Flows
 

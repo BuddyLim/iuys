@@ -10,9 +10,10 @@ from watchdog.events import (
     FileSystemEvent,
     EVENT_TYPE_MODIFIED,
 )
+from ocu.utils import SingletonMeta, logger
 
 
-class _Handler(FileSystemEventHandler):
+class _Handler(FileSystemEventHandler, metaclass=SingletonMeta):
     """Event watching handler for file creation/modified events"""
 
     event_emitter = None
@@ -26,23 +27,17 @@ class _Handler(FileSystemEventHandler):
         if event.is_directory:
             return None
 
-        # # elif event.event_type == EVENT_TYPE_CREATED:
-        # #     # Event is created, you can process it now
-        # #     print(f"Watchdog received created event - {event.src_path}")
-
         elif event.event_type == EVENT_TYPE_MODIFIED:
             try:
                 if os.path.isfile(event.src_path) is False:
                     return
-                print("Emitting message..")
-                resp = self.event_emitter.emit("new_file", event.src_path)
-                print(resp)
-            except ValueError:
-                pass
-            # print(f"Watchdog received modified event - {event.src_path}")
+                logger.info(f"Emitting message for {event.src_path}")
+                self.event_emitter.emit("new_file", event.src_path)
+            except ValueError as error:
+                logger.error(f"{error} for {event.src_path}")
 
 
-class FileWatcher:
+class FileWatcher(metaclass=SingletonMeta):
     """Main implementation for file watching for local I/O ops"""
 
     observer = None
@@ -57,16 +52,19 @@ class FileWatcher:
             format="%(asctime)s - %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
-        logging.info("start watching directory % s", self.path)
         self.observer = Observer()
         self.event_handler = _Handler(ee=ee)
 
     def observe(self):
+        """Main func for running loop to watch for file changes"""
+        logging.info("Start watching directory % s", self.path)
         self.observer.schedule(self.event_handler, self.path, recursive=True)
         self.observer.start()
         try:
             while True:
-                time.sleep(5)
+                time.sleep(2)
+        except Exception as error:  # pylint: disable=W0718
+            logging.error(error)
         finally:
             self.observer.stop()
             self.observer.join()
