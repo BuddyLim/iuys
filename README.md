@@ -1,4 +1,4 @@
-# IUYS (I Understand Your Screenshots)
+# IUYS (Intelligently Understanding Your Screenshots)
 
 ## About
 
