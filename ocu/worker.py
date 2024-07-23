@@ -23,6 +23,7 @@ class QueueThread(Thread):
         logger.info(f"Start sleeping for task: {self.task}")
         self._sleep_all()
         logger.info(f"Finished sleeping for task: {self.task}")
+        return
 
     def add_sleep(self, sleep):
         """Allows the thread to add more delay to the execution"""

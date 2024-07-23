@@ -26,3 +26,45 @@ Note: lancedb and dbm in this usage is ephemeral, once we shut the tooling down 
 ### Creation Flow
 
 ![Creation Flow](./imgs/creation_flow.png)
+
+## To Do List
+
+### General
+
+- Exception handling
+- Convert to CLI based tool
+  - Allow to be used by other program as an external sidecar
+- Testing
+- Changing of saving key-value store and vector store
+
+### File watcher
+
+- Filter file event only by images
+- Identify file by their checksums to decide whether to perform VLM ops
+- Exception handling
+- Testing
+
+### Worker
+
+- Optimization?
+- Exception handling
+- Testing
+
+### OCU
+
+- Allow changing of "list-of-allowed" models via CLI arguements
+- Testing
+- Optimization
+  - Currently the models being loaded into my M3 Pro 36gb RAM consumes 25gb!! <- (YIKES)
+
+### Key store
+
+- Store metadata of OCU-ed files
+- Retrieval pipeline
+- Testing
+
+### Vector store
+
+- Complete OCU response into embeddings and storing it into vector store
+- Retrieval pipeline
+- Testing

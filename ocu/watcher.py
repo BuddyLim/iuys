@@ -57,12 +57,12 @@ class FileWatcher(metaclass=SingletonMeta):
 
     def observe(self):
         """Main func for running loop to watch for file changes"""
-        logging.info("Start watching directory % s", self.path)
-        self.observer.schedule(self.event_handler, self.path, recursive=True)
-        self.observer.start()
         try:
+            logging.info("Start watching directory % s", self.path)
+            self.observer.schedule(self.event_handler, self.path, recursive=False)
+            self.observer.start()
             while True:
-                time.sleep(2)
+                time.sleep(4)
         except Exception as error:  # pylint: disable=W0718
             logging.error(error)
         finally:
