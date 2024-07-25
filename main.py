@@ -3,12 +3,8 @@
 import threading
 import gc
 from pyee import EventEmitter
-from ocu import QueueWorker, FileWatcher, VLMEngine
-from ocu.utils import logger, SingletonMeta
-
-# from mlx_lm import load, generate
-from model import Bert, load_model
-
+from ocu import QueueWorker, FileWatcher, VLMEngine, logger, SingletonMeta
+from ocu.v_store import VectorDBConnection
 
 emitter = EventEmitter()
 
@@ -26,11 +22,15 @@ class MainProgram(metaclass=SingletonMeta):
     in_progress = False
 
     def __init__(self) -> None:
-        self.background_thread = threading.Thread(target=run_watcher, args=())
-        self.background_thread.daemon = True
-        self.background_thread.start()
-        self.worker = QueueWorker(ee=emitter)
-        # self.vlm_engine = VLMEngine()
+        try:
+            self.background_thread = threading.Thread(target=run_watcher, args=())
+            self.background_thread.daemon = True
+            self.background_thread.start()
+            self.worker = QueueWorker(ee=emitter)
+            self.v_connection = VectorDBConnection()
+        except Exception as error:  # pylint: disable=broad-except
+            logger.error(error)
+            raise
 
     def run(self):
         """Running loop for the program"""
@@ -38,29 +38,40 @@ class MainProgram(metaclass=SingletonMeta):
             if len(self.worker.task_list) == 0 or self.in_progress:
                 continue
 
-            vlm_engine = VLMEngine()
-
             logger.info(f"Received a new task: {self.worker.task_list[0]}")
-
             self.in_progress = True
-            path = self.worker.task_list.pop()
-            response = vlm_engine.query_on_image(
-                prompt="Describe the contents of the image in a short and concise manner",
-                image_path=path,
-            )
 
-            logger.info(f"{vlm_engine.model_path} generated:\n{response}")
-            del vlm_engine
+            path = self.worker.task_list.pop()
+            response = self.get_vlm_response(path=path)
+            self.store_response(text=response, path=path)
+
             self.in_progress = False
-            gc.collect()
+
+    def get_vlm_response(self, path: str) -> str:
+        # Need to refactor this into it's own handlerclass
+        """Query the vlm for its inference on image"""
+        vlm_engine = VLMEngine()
+
+        response = vlm_engine.query_on_image(
+            prompt="Describe the contents of the image in a short and concise manner",
+            image_path=path,
+        )
+
+        logger.info(f"{vlm_engine.model_path} generated:\n{response}")
+        del vlm_engine
+        gc.collect()
+        return response
+
+    def store_response(self, text: str, path: str):
+        # Need to refactor this into it's own handlerclass
+
+        """Stores the response into the vector db"""
+        self.v_connection.store_text(text, path)
+        logger.info(f"Stored entry of: {path}")
 
 
 if __name__ == "__main__":
     try:
-        # MainProgram().run()
-
-        model, tokenizer = load_model(
-            "sentence-transformers/all-MiniLM-L6-v2", "./model/all-MiniLM-L6-v2.npz"
-        )
+        MainProgram().run()
     except KeyboardInterrupt:
         logger.info("Keyboard interruption; Stopped")
