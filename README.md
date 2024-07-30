@@ -13,12 +13,11 @@ IUYS is a tool that understands your images or screenshots for you to be able pe
 
 ## Tools Used
 
-Note: lancedb and dbm in this usage is ephemeral, once we shut the tooling down it loses all context. We retain context by creating a dump file and loading it back when the tool initializes again
+Note: lancedb in this usage is an embedded database, once we shut the tooling down it loses all context. We retain context by creating a dump file and loading it back when the tool initializes again
 
 - pyee (Event broker)
 - Watchdog (File watcher)
 - lancedb (Vector store)
-- dbm (Key-value store)
 - mlx-vlm (Visual language model framework)
 
 ## Flows
@@ -35,36 +34,36 @@ Note: lancedb and dbm in this usage is ephemeral, once we shut the tooling down 
 - Convert to CLI based tool
   - Allow to be used by other program as an external sidecar
 - Testing
-- Changing of saving key-value store and vector store
+- Changing of saving key-value store
 
 ### File watcher
 
+- <s>Receive file creation events and emit to Queue worker</s>
 - Filter file event only by images
 - Identify file by their checksums to decide whether to perform VLM ops
 - Exception handling
 - Testing
 
-### Worker
+### Queue Worker
 
+- <s>Receive file creation events from File Watcher</s>
+  - <s>Filter any unrelated events</s>
+  - <s>Task events to a queue</s>
 - Optimization?
 - Exception handling
 - Testing
 
 ### OCU
 
+- <s>Receive new tasks from Queue worker and perform inference</s>
+
 - Allow changing of "list-of-allowed" models via CLI arguements
 - Testing
 - Optimization
   - Currently the models being loaded into my M3 Pro 36gb RAM consumes 25gb!! <- (YIKES)
 
-### Key store
-
-- Store metadata of OCU-ed files
-- Retrieval pipeline
-- Testing
-
 ### Vector store
 
-- Complete OCU response into embeddings and storing it into vector store
+- <s>Receive OCU inferences into embeddings and storing it into vector store</s>
 - Retrieval pipeline
 - Testing

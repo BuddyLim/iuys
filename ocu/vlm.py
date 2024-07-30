@@ -38,6 +38,8 @@ class VLMEngine:
             image_path,
             prompt,
             verbose=True,
+            temp=self.temp,
+            max_tokens=500,
         )
 
         output.replace("<|end|>", "")
