@@ -29,7 +29,7 @@ class VectorDBConnection:
     vector_embedder = None
 
     db: DBConnection = None
-    uri: str = "./store/iuys_kv_store"
+    uri: str = "./store/iuys_v_store"
     table: Table = None
 
     def __init__(self, uri: str = ".") -> None:

@@ -3,8 +3,12 @@
 import threading
 import gc
 from pyee import EventEmitter
-from ocu import QueueWorker, FileWatcher, VLMEngine, logger, SingletonMeta
+from ocu.worker import QueueWorker
+from ocu.watcher import FileWatcher
+from ocu.vlm import VLMEngine
+from ocu.utils import logger, SingletonMeta
 from ocu.v_store import VectorDBConnection
+from ocu.kv_store import KVConnection
 
 emitter = EventEmitter()
 
@@ -27,7 +31,9 @@ class MainProgram(metaclass=SingletonMeta):
             self.background_thread.daemon = True
             self.background_thread.start()
             self.worker = QueueWorker(ee=emitter)
+            self.kv_connection = KVConnection()
             self.v_connection = VectorDBConnection()
+
         except Exception as error:  # pylint: disable=broad-except
             logger.error(error)
             raise
@@ -53,7 +59,7 @@ class MainProgram(metaclass=SingletonMeta):
         vlm_engine = VLMEngine()
 
         response = vlm_engine.query_on_image(
-            prompt="Describe the contents of the image in a short and concise manner",
+            prompt="Describe the contents of the image in precise but short details",
             image_path=path,
         )
 
@@ -63,11 +69,12 @@ class MainProgram(metaclass=SingletonMeta):
         return response
 
     def store_response(self, text: str, path: str):
-        # Need to refactor this into it's own handlerclass
-
         """Stores the response into the vector db"""
+
         self.v_connection.store_text(text, path)
+        self.kv_connection.store_kv(path, text)
         logger.info(f"Stored entry of: {path}")
+        gc.collect()
 
 
 if __name__ == "__main__":
