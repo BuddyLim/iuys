@@ -2,6 +2,7 @@
 
 import threading
 import gc
+import os
 from pyee import EventEmitter
 from ocu.worker import QueueWorker
 from ocu.watcher import FileWatcher
@@ -15,7 +16,7 @@ emitter = EventEmitter()
 
 def run_watcher():
     """Main function to start file observer"""
-    base_path = "/Users/limkuangtar/Desktop"
+    base_path = os.path.expanduser("~/Desktop")
     watcher = FileWatcher(ee=emitter, input_path=base_path)
     watcher.observe()
 
@@ -77,8 +78,30 @@ class MainProgram(metaclass=SingletonMeta):
         gc.collect()
 
 
+def run_main_program():
+    """Run main program in a thread"""
+    MainProgram().run()
+
+
+def run_input_watcher():
+    """Run input receiver in a thread"""
+
+    v_connection = VectorDBConnection()
+    while True:
+        user_input = input("- Query for nearest file -")
+        resp = v_connection.get_text(user_input)
+        logger.info(resp)
+
+
 if __name__ == "__main__":
     try:
-        MainProgram().run()
+        t2 = threading.Thread(target=run_main_program)
+        t1 = threading.Thread(target=run_input_watcher)
+
+        t1.start()
+        t2.start()
+
     except KeyboardInterrupt:
         logger.info("Keyboard interruption; Stopped")
+        t1.join()
+        t2.join()
