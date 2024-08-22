@@ -1,12 +1,13 @@
 """Main file for lancedb connection"""
 
+from typing import List
+from uuid import uuid4
+
 import lancedb
+from lancedb import DBConnection
 from lancedb.embeddings import get_registry
 from lancedb.pydantic import LanceModel, Vector
 from lancedb.table import Table
-from lancedb import DBConnection
-from uuid import uuid4
-from typing import List
 
 from ocu.utils import logger
 
@@ -53,5 +54,15 @@ class VectorDBConnection:
     def get_text(self, text: str) -> List[ImageModel]:
         """Queries from IMAGE_TABLE and return results"""
 
-        query_result = self.table.search(text).to_list()
+        query_result = (
+            self.table.search(text)
+            .select(
+                [
+                    "text",
+                    "uid",
+                    "path",
+                ]
+            )
+            .to_list()
+        )
         return query_result

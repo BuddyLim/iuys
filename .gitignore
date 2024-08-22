@@ -2,3 +2,7 @@ venv
 /services/models/*
 __pycache__
 /store/*
+
+build
+dist
+main.spec
